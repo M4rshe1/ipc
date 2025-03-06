@@ -11,7 +11,14 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                               int show_all, int show_ipv4, int show_ipv6,
                               int brief_output, int show_details, int show_dns) {
     if (!brief_output) {
-        printf("Windows IP Configuration\n\n");
+        char hostname[256];
+        DWORD hostname_size = sizeof(hostname);
+
+        if (GetComputerNameA(hostname, &hostname_size)) {
+            printf("Windows IP Configuration - %s\n\n", hostname);
+        } else {
+            printf("Windows IP Configuration\n\n");
+        }
     }
 
     for (PIP_ADAPTER_ADDRESSES pAdapter = pAdapterAddresses; pAdapter; pAdapter = pAdapter->Next) {
