@@ -17,19 +17,10 @@ jobs:
       - name: Install getopt for Windows
         shell: powershell
         run: |
-          choco install -y libgetopt
-
-      - name: Check getopt Installation and Find Include Path
-        shell: powershell
-        run: |
-          choco list -lo libgetopt
-          $getoptPath = (choco list -lo libgetopt | Select-String -Pattern "location:").ToString().Split(":")[1].Trim()
-          Write-Host "getopt Installation Path: $getoptPath"
-          Write-Host "::set-output name=getopt_path::$getoptPath"
-        id: find_getopt_path
+          choco install -y getopt -exact
 
       - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INCLUDE_PATH="$env:GITHUB_WORKSPACE/$(${{ steps.find_getopt_path.outputs.getopt_path }})/include"
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
