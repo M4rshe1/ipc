@@ -15,15 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install getopt for Windows
-        shell: powershell
-        run: |
-          choco install -y getopt -exact
-          Write-Host "GETOPT_PATH=$((Get-Command getopt).Source)"
-          Write-Host "::set-env name=GETOPT_PATH::$((Get-Command getopt).Source)"
-
       - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGETOPT_INCLUDE_DIR="$env:GETOPT_PATH"
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}

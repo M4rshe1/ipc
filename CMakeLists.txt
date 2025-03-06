@@ -14,6 +14,7 @@ add_executable(ipc
         src/utils/net_utils.c
         src/utils/string_utils.c
         src/utils/ipconfig_commands.c
+        src/utils/getopt.c
 )
 
 target_link_libraries(ipc
