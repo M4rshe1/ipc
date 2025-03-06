@@ -12,6 +12,6 @@ char *duplicate_string(const char *str) {
         perror("Failed to allocate memory");
         return NULL;
     }
-    strcpy_s (new_str, str);
+    strcpy_s (new_str, len, str);
     return new_str;
 }
