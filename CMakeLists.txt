@@ -3,7 +3,7 @@ project(ipc)
 
 set(CMAKE_C_STANDARD 99)
 
-include_directories(include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(ipc
         src/main.c
@@ -14,6 +14,7 @@ add_executable(ipc
         src/utils/net_utils.c
         src/utils/string_utils.c
         src/utils/ipconfig_commands.c
+        getopt.c
 )
 
 target_link_libraries(ipc
