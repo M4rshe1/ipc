@@ -55,11 +55,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ${{ env.ASSET_PATH }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}*
+          files: ${{ env.ASSET_PATH }}
