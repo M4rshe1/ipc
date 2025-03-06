@@ -6,6 +6,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
   build:
