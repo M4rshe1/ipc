@@ -27,11 +27,10 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
             int ipv4Count = 0;
             int ipv6Count = 0;
             PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
-
+            size_t convertedChars = 0;
             if (brief_output) {
                 char friendlyNameAscii[256];
-                wcstombs(friendlyNameAscii, pAdapter->FriendlyName,
-                         sizeof(friendlyNameAscii));
+                wcstombs_s(&convertedChars, friendlyNameAscii, sizeof(friendlyNameAscii), pAdapter->FriendlyName, _TRUNCATE);
                 print_color(11, friendlyNameAscii); // Cyan
                 printf(": ");
 
@@ -74,16 +73,16 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                 printf("\n");
             } else {
                 char friendlyNameAscii[256];
-                wcstombs(friendlyNameAscii, pAdapter->FriendlyName,
-                         sizeof(friendlyNameAscii));
+                wcstombs_s(&convertedChars, friendlyNameAscii, sizeof(friendlyNameAscii), pAdapter->FriendlyName, _TRUNCATE);
+
                 print_color(11, "Adapter Name: "); // Cyan
                 printf("%s\n", friendlyNameAscii);
 
                 if (show_details) {
                     // Convert Description to ASCII
                     char descriptionAscii[256];
-                    wcstombs(descriptionAscii, pAdapter->Description,
-                             sizeof(descriptionAscii));
+                    wcstombs_s(&convertedChars, descriptionAscii, sizeof(descriptionAscii), pAdapter->Description, _TRUNCATE);
+
                     print_color(15, "  Description: "); // White
                     printf("%s\n", descriptionAscii);
 
@@ -268,8 +267,7 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                     }
                     if (pAdapter->DnsSuffix != NULL && wcslen(pAdapter->DnsSuffix) > 0) {
                         char dnsSuffixAscii[256];
-                        wcstombs(dnsSuffixAscii, pAdapter->DnsSuffix,
-                                 sizeof(dnsSuffixAscii));
+                        wcstombs_s(&convertedChars, dnsSuffixAscii, sizeof(dnsSuffixAscii), pAdapter->DnsSuffix, _TRUNCATE);
                         print_color(13, "  DNS Suffix: "); // Magenta
                         printf("%s\n", dnsSuffixAscii);
                     }
@@ -311,8 +309,9 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                     char leaseExpiresStr[64];
 
                     if (leaseObtained > 0) {
-                        strftime(leaseObtainedStr, sizeof(leaseObtainedStr),
-                                 "%Y-%m-%d %H:%M:%S", localtime(&leaseObtained));
+                        struct tm leaseObtainedTm;
+                        localtime_s(&leaseObtainedTm, &leaseObtained);
+                        strftime(leaseObtainedStr, sizeof(leaseObtainedStr), "%Y-%m-%d %H:%M:%S", &leaseObtainedTm);
                         print_color(9, "  IP Lease Obtained: ");
                         printf("%s\n", leaseObtainedStr);
                     } else {
@@ -321,8 +320,9 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                     }
 
                     if (leaseExpires > 0) {
-                        strftime(leaseExpiresStr, sizeof(leaseExpiresStr),
-                                 "%Y-%m-%d %H:%M:%S", localtime(&leaseExpires));
+                        struct tm leaseExpiresTm;
+                        localtime_s(&leaseExpiresTm, &leaseExpires);
+                        strftime(leaseExpiresStr, sizeof(leaseExpiresStr), "%Y-%m-%d %H:%M:%S", &leaseExpiresTm);
                         print_color(9, "  IP Lease Expires: ");
                         printf("%s\n", leaseExpiresStr);
                     } else {
