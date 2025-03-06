@@ -36,10 +36,15 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}}
 
+      - name: Verify Build Directory Contents
+        shell: powershell
+        run: |
+          Get-ChildItem -Path ${{github.workspace}}/build
+
       - name: Package
         shell: powershell
         run: |
-          cd ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+          cd ${{github.workspace}}/build
           $TAG_NAME = "${env:GITHUB_REF}".Replace("refs/tags/", "")
           $AssetPath = Join-Path -Path $(pwd) -ChildPath "$TAG_NAME.zip"
           Compress-Archive -Path * -DestinationPath $AssetPath -Force
