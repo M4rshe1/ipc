@@ -14,13 +14,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install winflexbison (includes getopt)
+      - name: Install getopt for Windows
         shell: powershell
         run: |
-          choco install -y winflexbison
+          choco install -y libgetopt
+
+      - name: Check getopt Installation and Find Include Path
+        shell: powershell
+        run: |
+          choco list -lo libgetopt
+          $getoptPath = (choco list -lo libgetopt | Select-String -Pattern "location:").ToString().Split(":")[1].Trim()
+          Write-Host "getopt Installation Path: $getoptPath"
+          Write-Host "::set-output name=getopt_path::$getoptPath"
+        id: find_getopt_path
 
       - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INCLUDE_PATH="$env:GITHUB_WORKSPACE/$(${{ steps.find_getopt_path.outputs.getopt_path }})/include"
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -30,13 +39,16 @@ jobs:
         run: ctest -C ${{env.BUILD_TYPE}}
 
       - name: Package
-        shell: bash
+        shell: powershell
         run: |
           cd ${{github.workspace}}/build/${{env.BUILD_TYPE}}
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          7z a "${TAG_NAME}.zip" *
-          echo "ASSET_PATH=$(pwd)/${TAG_NAME}.zip" >> $GITHUB_ENV
-          echo "ASSET_NAME=${TAG_NAME}.zip" >> $GITHUB_ENV
+          $TAG_NAME = "${env:GITHUB_REF}".Replace("refs/tags/", "")
+          $AssetPath = Join-Path -Path $(pwd) -ChildPath "$TAG_NAME.zip"
+          Compress-Archive -Path * -DestinationPath $AssetPath -Force
+          Write-Host "ASSET_PATH=$AssetPath"
+          Write-Host "ASSET_NAME=$TAG_NAME.zip"
+          Write-Host "::set-env name=ASSET_PATH::$AssetPath"
+          Write-Host "::set-env name=ASSET_NAME::$TAG_NAME.zip"
 
       - name: Create Release
         id: create_release
