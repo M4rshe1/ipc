@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(ipc)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
@@ -14,7 +14,6 @@ add_executable(ipc
         src/utils/net_utils.c
         src/utils/string_utils.c
         src/utils/ipconfig_commands.c
-        getopt.c
 )
 
 target_link_libraries(ipc
