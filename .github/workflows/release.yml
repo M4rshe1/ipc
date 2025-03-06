@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install getopt
+      - name: Install winflexbison (includes getopt)
         shell: powershell
         run: |
-          choco install -y gnuwin32-getopt
+          choco install -y winflexbison
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
