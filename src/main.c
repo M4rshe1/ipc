@@ -28,23 +28,35 @@ int main(int argc, char *argv[]) {
     int brief_output = 0;
     int show_details = 0;
     int show_dns = 1;
+    int only_physical = 0;
     int show_route = 0;
     int show_stats = 0;
     char *renew_adapter = NULL;
     char *release_adapter = NULL;
+    int flush_dns = 0;
+    int show_connections = 0;
 
-    // Argument parsing using getopt_long
     int opt;
     int option_index = 0;
     static struct option long_options[] = {
-            {"all", no_argument, 0, 'a'},       {"ipv4", no_argument, 0, '4'},
-            {"ipv6", no_argument, 0, '6'},      {"brief", no_argument, 0, 'b'},
-            {"details", no_argument, 0, 'd'},   {"help", no_argument, 0, 'h'},
-            {"no-dns", no_argument, 0, 'n'},    {"route", no_argument, 0, 'r'},
-            {"stats", no_argument, 0, 's'},      {"renew", required_argument, 0, 1},
-            {"release", required_argument, 0, 2}, {0, 0, 0, 0}};
+            {"all",           no_argument,       0, 'a'},
+            {"ipv4",          no_argument,       0, '4'},
+            {"ipv6",          no_argument,       0, '6'},
+            {"brief",         no_argument,       0, 'b'},
+            {"details",       no_argument,       0, 'd'},
+            {"help",          no_argument,       0, 'h'},
+            {"no-dns",        no_argument,       0, 'n'},
+            {"route",         no_argument,       0, 'r'},
+            {"stats",         no_argument,       0, 's'},
+            {"renew",         required_argument, 0, 1},
+            {"only-physical", no_argument,       0, 'p'},
+            {"release",       required_argument, 0, 2},
+            {"flush-dns",     no_argument,       0, 'f'},
+            {"connections",   no_argument,       0, 'c'},
+            {0,               0,                 0, 0},
+    };
 
-    while ((opt = getopt_long(argc, argv, "a46bcdhnrs", long_options,
+    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfc", long_options,
                               &option_index)) != -1) {
         switch (opt) {
             case 'a':
@@ -77,11 +89,23 @@ int main(int argc, char *argv[]) {
             case 's':
                 show_stats = 1;
                 break;
-            case 1: // --renew
+            case 'p':
+                only_physical = 1;
+                break;
+            case 'f':
+                flush_dns = 1;
+                break;
+            case 'c':
+                show_connections = 1;
+                break;
+            case 1:
                 renew_adapter = optarg;
                 break;
-            case 2: // --release
+            case 2:
                 release_adapter = optarg;
+                break;
+            case 4:
+                ping_host = optarg;
                 break;
             default:
                 fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
@@ -90,7 +114,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Handle commands
     if (renew_adapter != NULL) {
         renew_dhcp_lease(renew_adapter);
         WSACleanup();
@@ -99,6 +122,13 @@ int main(int argc, char *argv[]) {
 
     if (release_adapter != NULL) {
         release_dhcp_lease(release_adapter);
+        WSACleanup();
+        return 0;
+    }
+
+    if (flush_dns) {
+        system("ipconfig /flushdns");
+        printf("DNS cache flushed successfully.\n");
         WSACleanup();
         return 0;
     }
@@ -115,18 +145,53 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    // Get adapter addresses
+    if (show_connections) {
+        system("netstat -an");
+        WSACleanup();
+        return 0;
+    }
+
+
     PIP_ADAPTER_ADDRESSES pAdapterAddresses = get_adapter_addresses();
     if (pAdapterAddresses == NULL) {
         WSACleanup();
         return 1;
     }
 
-    // Display IP configuration
+    if (only_physical) {
+        PIP_ADAPTER_ADDRESSES pCurrent = pAdapterAddresses;
+        PIP_ADAPTER_ADDRESSES pPrev = NULL;
+
+        while (pCurrent) {
+            if (pCurrent->IfType != IF_TYPE_ETHERNET_CSMACD &&
+                pCurrent->IfType != IF_TYPE_IEEE80211 &&
+                pCurrent->IfType != IF_TYPE_IEEE1394 ||
+                pCurrent->IfType == IF_TYPE_SOFTWARE_LOOPBACK ||
+                (wcsstr(pCurrent->Description, L"VMware") != NULL) ||
+                (wcsstr(pCurrent->Description, L"Loopback") != NULL) ||
+                (wcsstr(pCurrent->Description, L"Virtual") != NULL) ||
+                (wcsstr(pCurrent->Description, L"VirtualBox") != NULL) ||
+                (wcsstr(pCurrent->Description, L"Hyper-V") != NULL)) {
+
+                PIP_ADAPTER_ADDRESSES pNext = pCurrent->Next;
+
+                if (pPrev == NULL) {
+                    pAdapterAddresses = pNext;
+                } else {
+                    pPrev->Next = pNext;
+                }
+
+                pCurrent = pNext;
+            } else {
+                pPrev = pCurrent;
+                pCurrent = pCurrent->Next;
+            }
+        }
+    }
+
     display_ip_configuration(pAdapterAddresses, show_all, show_ipv4, show_ipv6,
                              brief_output, show_details, show_dns);
 
-    // Free memory
     free(pAdapterAddresses);
     WSACleanup();
 
@@ -135,19 +200,21 @@ int main(int argc, char *argv[]) {
 
 void print_usage(char *program_name) {
     printf("Usage: %s [OPTIONS]\n", program_name);
-    printf("Windows IP configuration tool with Linux-like features\n\n");
+    printf("Windows IP configuration tool\n\n");
     printf("Options:\n");
-    printf("  -a, --all           Show all adapters (including disconnected "
-           "ones)\n");
-    printf("  -4, --ipv4          Show only IPv4 addresses\n");
-    printf("  -6, --ipv6          Show only IPv6 addresses\n");
-    printf("  -b, --brief         Brief output format\n");
-    printf("  -d, --details       Show detailed information\n");
-    printf("  -h, --help          Display this help message\n");
-    printf("  -n, --no-dns        Don't show DNS information\n");
-    printf("  -r, --route         Show routing table\n");
-    printf("  -s, --stats         Show network statistics\n");
-    printf("  --renew <adapter>   Renew DHCP lease for adapter\n");
-    printf("  --release <adapter> Release DHCP lease for adapter\n");
+    printf("  -a, --all             Show all adapters (including disconnected ones)\n");
+    printf("  -4, --ipv4            Show only IPv4 addresses\n");
+    printf("  -6, --ipv6            Show only IPv6 addresses\n");
+    printf("  -b, --brief           Brief output format\n");
+    printf("  -c, --connections     Show active network connections\n");
+    printf("  -d, --details         Show detailed information\n");
+    printf("  -f, --flush-dns       Flush DNS resolver cache\n");
+    printf("  -h, --help            Display this help message\n");
+    printf("  -n, --no-dns          Don't show DNS information\n");
+    printf("  -p, --only-physical   Show only physical adapters\n");
+    printf("  -r, --route           Show routing table\n");
+    printf("  -s, --stats           Show network statistics\n");
+    printf("      --renew <adapter> Renew DHCP lease for adapter\n");
+    printf("      --release <adapter> Release DHCP lease for adapter\n");
     printf("\n");
 }
