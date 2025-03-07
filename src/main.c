@@ -104,9 +104,6 @@ int main(int argc, char *argv[]) {
             case 2:
                 release_adapter = optarg;
                 break;
-            case 4:
-                ping_host = optarg;
-                break;
             default:
                 fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
                 WSACleanup();
