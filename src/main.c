@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     int show_dns = 1;
     int only_physical = 0;
     int show_route = 0;
+    int show_global_ip = 0;
     int show_stats = 0;
     char *renew_adapter = NULL;
     char *release_adapter = NULL;
@@ -50,13 +51,14 @@ int main(int argc, char *argv[]) {
             {"stats",         no_argument,       0, 's'},
             {"renew",         required_argument, 0, 1},
             {"only-physical", no_argument,       0, 'p'},
+            {"global",        no_argument,       0, 'g'},
             {"release",       required_argument, 0, 2},
             {"flush-dns",     no_argument,       0, 'f'},
             {"connections",   no_argument,       0, 'c'},
             {0,               0,                 0, 0},
     };
 
-    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfc", long_options,
+    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfcg", long_options,
                               &option_index)) != -1) {
         switch (opt) {
             case 'a':
@@ -97,6 +99,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'c':
                 show_connections = 1;
+                break;
+            case 'g':
+                show_global_ip = 1;
                 break;
             case 1:
                 renew_adapter = optarg;
@@ -148,6 +153,24 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    if (show_global_ip) {
+        char global_ip[100];
+        if (get_global_ip(global_ip, sizeof(global_ip)) == 0) {
+            printf("Global IP Address: %s\n", global_ip);
+            if (OpenClipboard(NULL)) {
+                EmptyClipboard();
+                HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, strlen(global_ip) + 1);
+                memcpy(GlobalLock(hGlob), global_ip, strlen(global_ip) + 1);
+                GlobalUnlock(hGlob);
+                SetClipboardData(CF_TEXT, hGlob);
+                CloseClipboard();
+            }
+        } else {
+            printf("Failed to retrieve global IP address\n");
+        }
+        WSACleanup();
+        return 0;
+    }
 
     PIP_ADAPTER_ADDRESSES pAdapterAddresses = get_adapter_addresses();
     if (pAdapterAddresses == NULL) {
@@ -211,6 +234,7 @@ void print_usage(char *program_name) {
     printf("  -p, --only-physical   Show only physical adapters\n");
     printf("  -r, --route           Show routing table\n");
     printf("  -s, --stats           Show network statistics\n");
+    printf("  -g, --global          Show global (public) IP address\n");
     printf("      --renew <adapter> Renew DHCP lease for adapter\n");
     printf("      --release <adapter> Release DHCP lease for adapter\n");
     printf("\n");

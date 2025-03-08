@@ -19,4 +19,5 @@ add_executable(ipc
 target_link_libraries(ipc
         ws2_32
         iphlpapi
+        winhttp
 )

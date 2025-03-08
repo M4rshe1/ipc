@@ -2,6 +2,8 @@
 
 This is a Windows IP configuration tool written in C, providing Linux-like `ip` command features. It displays network adapter information, including IP addresses, MAC addresses, DNS servers, and more.
 
+![cover](.github/assets/cover.png)
+
 ## Features
 
 * **Adapter Information:** Displays detailed information about network adapters, including name, description, MAC address, IP addresses (IPv4 and IPv6), DNS servers, and gateway addresses.
