@@ -31,6 +31,12 @@ ipc [OPTIONS]
 * `-n`, `--no-dns`: Don't show DNS information.
 * `-r`, `--route`: Show routing table.
 * `-s`, `--stats`: Show network statistics.
+* `-g`, `--global`: Show global IP addresses.
+* `-p`, `--only-physical`: Show only physical addresses.
+* `-c`, `--connections`: Show active connections.
+* ⠀⠀⠀⠀⠀⠀`--release`: Release DHCP lease.
+* ⠀⠀⠀⠀⠀⠀`--renew`: Renew DHCP lease.
+* ⠀⠀⠀⠀⠀⠀`--flush`: Flush DNS cache.
 
 ### Examples
 
