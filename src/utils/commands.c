@@ -19,6 +19,9 @@ void release_dhcp_lease(const char *adapter_name) {
 void nslookup(const char *hostname) {
     char command[256];
     snprintf(command, sizeof(command), "nslookup %s", hostname);
-    printf("Performing nslookup for '%s'...\n", hostname);
     system(command);
 }
+
+void print_routing_table() { system("route print"); }
+
+void print_network_statistics() { system("netstat -e"); }

@@ -33,6 +33,9 @@ ipc [OPTIONS]
 * `-s`, `--stats`: Show network statistics.
 * `-g`, `--global`: Show global IP addresses.
 * `-p`, `--only-physical`: Show only physical addresses.
+* `-l`, `--loopback`: Show loopback addresses.
+* `-m`, `--mac`: Show MAC addresses.
+* `-w`, `--wake`: Send Wake-on-LAN packets.
 * `-c`, `--connections`: Show active connections.
 * `-i`, `--hide`: Hide sensitive information like Public IP.
 * ⠀⠀⠀⠀⠀⠀`--release`: Release DHCP lease.
