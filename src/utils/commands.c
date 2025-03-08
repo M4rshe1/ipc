@@ -1,4 +1,4 @@
-#include "utils/ipconfig_commands.h"
+#include "utils/commands.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,5 +13,12 @@ void release_dhcp_lease(const char *adapter_name) {
     char command[256];
     snprintf(command, sizeof(command), "ipconfig /release \"%s\"", adapter_name);
     printf("Releasing DHCP lease for adapter '%s'...\n", adapter_name);
+    system(command);
+}
+
+void nslookup(const char *hostname) {
+    char command[256];
+    snprintf(command, sizeof(command), "nslookup %s", hostname);
+    printf("Performing nslookup for '%s'...\n", hostname);
     system(command);
 }

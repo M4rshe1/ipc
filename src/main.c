@@ -7,7 +7,7 @@
 #include "core/adapter_info.h"
 #include "display/display.h"
 #include "utils/net_utils.h"
-#include "utils/ipconfig_commands.h"
+#include "utils/commands.h"
 
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -29,36 +29,40 @@ int main(int argc, char *argv[]) {
     int show_details = 0;
     int show_dns = 1;
     int only_physical = 0;
+    int hide_sensitive = 0;
     int show_route = 0;
     int show_global_ip = 0;
     int show_stats = 0;
     char *renew_adapter = NULL;
     char *release_adapter = NULL;
+    char *nslookup_host = NULL;
     int flush_dns = 0;
     int show_connections = 0;
 
     int opt;
     int option_index = 0;
     static struct option long_options[] = {
-            {"all",           no_argument,       0, 'a'},
-            {"ipv4",          no_argument,       0, '4'},
-            {"ipv6",          no_argument,       0, '6'},
-            {"brief",         no_argument,       0, 'b'},
-            {"details",       no_argument,       0, 'd'},
-            {"help",          no_argument,       0, 'h'},
-            {"no-dns",        no_argument,       0, 'n'},
-            {"route",         no_argument,       0, 'r'},
-            {"stats",         no_argument,       0, 's'},
-            {"renew",         required_argument, 0, 1},
-            {"only-physical", no_argument,       0, 'p'},
-            {"global",        no_argument,       0, 'g'},
-            {"release",       required_argument, 0, 2},
-            {"flush-dns",     no_argument,       0, 'f'},
-            {"connections",   no_argument,       0, 'c'},
-            {0,               0,                 0, 0},
+            {"all", no_argument, 0, 'a'},
+            {"ipv4", no_argument, 0, '4'},
+            {"ipv6", no_argument, 0, '6'},
+            {"brief", no_argument, 0, 'b'},
+            {"details", no_argument, 0, 'd'},
+            {"help", no_argument, 0, 'h'},
+            {"no-dns", no_argument, 0, 'n'},
+            {"route", no_argument, 0, 'r'},
+            {"stats", no_argument, 0, 's'},
+            {"renew", optional_argument, 0, 1},
+            {"only-physical", no_argument, 0, 'p'},
+            {"global", no_argument, 0, 'g'},
+            {"release", optional_argument, 0, 2},
+            {"flush-dns", no_argument, 0, 'f'},
+            {"connections", no_argument, 0, 'c'},
+            {"lookup", optional_argument, 0, 'l'},
+            {"hide", no_argument, 0, 'i'},
+            {0, 0, 0, 0},
     };
 
-    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfcg", long_options,
+    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfcglhi", long_options,
                               &option_index)) != -1) {
         switch (opt) {
             case 'a':
@@ -102,6 +106,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 'g':
                 show_global_ip = 1;
+                break;
+            case 'l':
+                nslookup_host = optarg;
+                break;
+            case 'i':
+                hide_sensitive = 1;
                 break;
             case 1:
                 renew_adapter = optarg;
@@ -153,21 +163,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    if (nslookup_host != NULL) {
+        nslookup(nslookup_host);
+        WSACleanup();
+        return 0;
+    }
+
     if (show_global_ip) {
-        char global_ip[100];
-        if (get_global_ip(global_ip, sizeof(global_ip)) == 0) {
-            printf("Global IP Address: %s\n", global_ip);
-            if (OpenClipboard(NULL)) {
-                EmptyClipboard();
-                HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, strlen(global_ip) + 1);
-                memcpy(GlobalLock(hGlob), global_ip, strlen(global_ip) + 1);
-                GlobalUnlock(hGlob);
-                SetClipboardData(CF_TEXT, hGlob);
-                CloseClipboard();
-            }
-        } else {
-            printf("Failed to retrieve global IP address\n");
-        }
+        print_global_ip(hide_sensitive);
         WSACleanup();
         return 0;
     }
@@ -234,6 +237,7 @@ void print_usage(char *program_name) {
     printf("  -p, --only-physical   Show only physical adapters\n");
     printf("  -r, --route           Show routing table\n");
     printf("  -s, --stats           Show network statistics\n");
+    printf("  -i, --hide            Hide sensitive information (e.g., Public IP)\n");
     printf("  -g, --global          Show global (public) IP address\n");
     printf("      --renew <adapter> Renew DHCP lease for adapter\n");
     printf("      --release <adapter> Release DHCP lease for adapter\n");

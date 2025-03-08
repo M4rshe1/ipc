@@ -13,7 +13,7 @@ add_executable(ipc
         src/display/color_output.c
         src/utils/net_utils.c
         src/utils/string_utils.c
-        src/utils/ipconfig_commands.c
+        src/utils/commands.c
 )
 
 target_link_libraries(ipc

@@ -34,6 +34,7 @@ ipc [OPTIONS]
 * `-g`, `--global`: Show global IP addresses.
 * `-p`, `--only-physical`: Show only physical addresses.
 * `-c`, `--connections`: Show active connections.
+* `-i`, `--hide`: Hide sensitive information like Public IP.
 * ⠀⠀⠀⠀⠀⠀`--release`: Release DHCP lease.
 * ⠀⠀⠀⠀⠀⠀`--renew`: Renew DHCP lease.
 * ⠀⠀⠀⠀⠀⠀`--flush`: Flush DNS cache.

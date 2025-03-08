@@ -3,6 +3,7 @@
 #include <string.h>
 #include <windows.h>
 #include <winhttp.h>
+#include <stdio.h>
 
 void print_routing_table() { system("route print"); }
 
@@ -94,4 +95,25 @@ int get_global_ip(char *ip_buffer, size_t buffer_size) {
     if (hSession) WinHttpCloseHandle(hSession);
 
     return result;
+}
+
+void print_global_ip(int hide_sensitive) {
+    char global_ip[100];
+    if (get_global_ip(global_ip, sizeof(global_ip)) == 0) {
+        if (!hide_sensitive) {
+        printf("Global IP Address: %s\n", global_ip);
+        } else {
+            printf("Global IP Address: [hidden]\n");
+        }
+        if (OpenClipboard(NULL)) {
+            EmptyClipboard();
+            HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, strlen(global_ip) + 1);
+            memcpy(GlobalLock(hGlob), global_ip, strlen(global_ip) + 1);
+            GlobalUnlock(hGlob);
+            SetClipboardData(CF_TEXT, hGlob);
+            CloseClipboard();
+        }
+    } else {
+        printf("Failed to retrieve global IP address\n");
+    }
 }
