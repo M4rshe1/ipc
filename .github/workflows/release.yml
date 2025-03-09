@@ -58,7 +58,7 @@ jobs:
           $AssetPath = Join-Path -Path $(pwd) -ChildPath "$TAG_NAME.zip"
           Compress-Archive -Path * -DestinationPath $AssetPath -Force
           Write-Host "ASSET_PATH=$AssetPath"
-          Write-Host "ASSET_NAME=$TAG_NAME.zip"
+          Write-Host "ASSET_NAME=ipc-$TAG_NAME.zip"
           Write-Host "::set-env name=ASSET_PATH::$AssetPath"
           Write-Host "::set-env name=ASSET_NAME::$TAG_NAME.zip"
       - name: Create Release
