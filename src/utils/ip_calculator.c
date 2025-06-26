@@ -1,4 +1,5 @@
 #include "utils/ip_calculator.h"
+#include "display/color_output.h"
 #include <stdio.h>
 #include <winsock2.h>
 
@@ -26,11 +27,11 @@ void calculate_subnet(const char *ip_address, int subnet_mask) {
     last_host_addr.s_addr = htonl(last_host);
     mask_addr.s_addr = htonl(mask);
 
-    printf("  Subnet Details:\n");
-    printf("    Network: %s\n", inet_ntoa(network_addr));
-    printf("    Subnet Mask: %s\n", inet_ntoa(mask_addr));
-    printf("    Broadcast: %s\n", inet_ntoa(broadcast_addr));
-    printf("    First Host: %s\n", inet_ntoa(first_host_addr));
-    printf("    Last Host: %s\n", inet_ntoa(last_host_addr));
-    printf("    Number of Hosts: %lu\n", num_hosts);
+    print_color(14, "    Subnet Calculation:\n"); // Yellow
+    printf("      Network: %s\n", inet_ntoa(network_addr));
+    printf("      Subnet Mask: %s\n", inet_ntoa(mask_addr));
+    printf("      Broadcast: %s\n", inet_ntoa(broadcast_addr));
+    printf("      First Host: %s\n", inet_ntoa(first_host_addr));
+    printf("      Last Host: %s\n", inet_ntoa(last_host_addr));
+    printf("      Number of Hosts: %lu\n", num_hosts);
 }

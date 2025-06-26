@@ -10,7 +10,7 @@
 
 void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                               int show_all, int show_ipv4, int show_ipv6,
-                              int brief_output, int show_details, int show_dns) {
+                              int brief_output, int show_details, int show_dns, int show_subnet) {
     if (!brief_output) {
         char hostname[256];
         DWORD hostname_size = sizeof(hostname);
@@ -98,7 +98,7 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                                 char ipstringbuffer[46];
                                 inet_ntop(AF_INET, &(sockaddr_ipv4->sin_addr), ipstringbuffer, sizeof(ipstringbuffer));
                                 printf("    %d) %s /%d\n", count, ipstringbuffer, pUnicast->OnLinkPrefixLength);
-                                if (show_details) {
+                                if (show_subnet) {
                                     calculate_subnet(ipstringbuffer, pUnicast->OnLinkPrefixLength);
                                 }
                             }

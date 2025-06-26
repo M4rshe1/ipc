@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     int show_dns = 1;
     int only_physical = 0;
     int hide_sensitive = 0;
+    int show_subnet = 0;
     char *resolve_mac = NULL;
 
     int opt;
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
             {0,               0,                 0, 0},
     };
 
-    while ((opt = getopt_long(argc, argv, "a46bcdhnrspfcgl:him:w:", long_options,
+    while ((opt = getopt_long(argc, argv, "a46bcdhtnrspfcgl:him:w:", long_options,
                               &option_index)) != -1) {
         switch (opt) {
             case 'a':
@@ -75,6 +76,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'b':
                 brief_output = 1;
+                break;
+            case 't':
+                show_subnet = 1;
                 break;
             case 'd':
                 show_details = 1;
@@ -210,7 +214,7 @@ int main(int argc, char *argv[]) {
     }
 
     display_ip_configuration(pAdapterAddresses, show_all, show_ipv4, show_ipv6,
-                             brief_output, show_details, show_dns);
+                             brief_output, show_details, show_dns, show_subnet);
 
 
     free(pAdapterAddresses);
@@ -227,6 +231,7 @@ void print_usage(char *program_name) {
     printf("  -4, --ipv4                    Show only IPv4 addresses\n");
     printf("  -6, --ipv6                    Show only IPv6 addresses\n");
     printf("  -b, --brief                   Brief output format\n");
+    printf("  -t                            calculate subnet details for an IP address\n");
     printf("  -c, --connections             Show active network connections\n");
     printf("  -d, --details                 Show detailed information\n");
     printf("  -f, --flush-dns               Flush DNS resolver cache\n");
