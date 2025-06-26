@@ -1,6 +1,7 @@
 #include <winsock2.h>
 #include "display/display.h"
 #include "display/color_output.h"
+#include "utils/ip_calculator.h"
 #include <stdio.h>
 #include <windows.h>
 #include <ws2tcpip.h>
@@ -97,6 +98,9 @@ void display_ip_configuration(PIP_ADAPTER_ADDRESSES pAdapterAddresses,
                                 char ipstringbuffer[46];
                                 inet_ntop(AF_INET, &(sockaddr_ipv4->sin_addr), ipstringbuffer, sizeof(ipstringbuffer));
                                 printf("    %d) %s /%d\n", count, ipstringbuffer, pUnicast->OnLinkPrefixLength);
+                                if (show_details) {
+                                    calculate_subnet(ipstringbuffer, pUnicast->OnLinkPrefixLength);
+                                }
                             }
                         }
                     }

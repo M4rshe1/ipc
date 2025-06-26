@@ -9,6 +9,7 @@
 #include "display/display.h"
 #include "utils/net_utils.h"
 #include "utils/commands.h"
+#include "utils/ip_calculator.h"
 
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
             {"hide",          no_argument,       0, 'i'},
             {"resolve-mac",   required_argument, 0, 'm'},
             {"wake",          required_argument, 0, 'w'},
+            {"calc",          required_argument, 0, 3},
             {0,               0,                 0, 0},
     };
 
@@ -129,6 +131,17 @@ int main(int argc, char *argv[]) {
                 release_dhcp_lease(optarg);
                 WSACleanup();
                 return 0;
+            case 3: {
+                char *ip_str = strtok(optarg, "/");
+                char *mask_str = strtok(NULL, "/");
+                if (ip_str && mask_str) {
+                    calculate_subnet(ip_str, atoi(mask_str));
+                } else {
+                    fprintf(stderr, "Invalid format for --calc. Use ip/mask.\n");
+                }
+                WSACleanup();
+                return 0;
+            }
             default:
                 fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
                 WSACleanup();
@@ -210,8 +223,7 @@ void print_usage(char *program_name) {
     printf("Usage: %s [OPTIONS]\n", program_name);
     printf("Windows IP configuration tool\n\n");
     printf("Options:\n");
-    printf("  -a, --all             Show all adapters (including disconnected "
-           "ones)\n");
+    printf("  -a, --all                     Show all adapters (including disconnected ones)\n");
     printf("  -4, --ipv4                    Show only IPv4 addresses\n");
     printf("  -6, --ipv6                    Show only IPv6 addresses\n");
     printf("  -b, --brief                   Brief output format\n");
@@ -229,7 +241,8 @@ void print_usage(char *program_name) {
     printf("  -g, --global                  Show global (public) IP address\n");
     printf("  -w, --wake <target>           Send Wake-on-LAN packet to target (MAC or IP)\n");
     printf("      --renew <?adapter>        Renew DHCP lease for adapter\n");
-    printf("      --release <?adapter>      Release DHCP lease for adapter\n");
+    printf("      --release <?adapter>      Release DHCP lease for adapter");
+    printf("      --calc <ip/mask>          Calculate subnet details for an IP address");
     printf("\n");
 }
 

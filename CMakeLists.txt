@@ -14,6 +14,7 @@ add_executable(ipc
         src/utils/net_utils.c
         src/utils/string_utils.c
         src/utils/commands.c
+        src/utils/ip_calculator.c
 )
 
 target_link_libraries(ipc
